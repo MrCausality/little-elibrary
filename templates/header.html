@@ -1,0 +1,22 @@
+<div class="row top-menu">
+	<div class="col-md-6">
+		<a href="{{url_for('showUser', user_id=session.user_id)}}">
+			<span class="glyphicon glyphicon-home" aria-hidden="true"></span>My Collection
+		</a>
+
+		<a href="{{url_for('showBooks')}}">
+			<span class="glyphicon glyphicon-book" aria-hidden="true"></span>All Books
+		</a>
+		<a href="{{ url_for('showUsers') }}">
+			<span class="glyphicon glyphicon-user" aria-hidden="true"></span>All Users
+		</a>
+	</div>
+	<div class="col-md-6 text-right">
+					{%if 'username' not in session %}
+			<a href="{{ url_for('showLogin') }}">Click here to log in</a>
+			{% else %}
+			<a href="{{ url_for('disconnect') }}">Logout</a>
+			{% endif %}
+		
+	</div>
+</div>
