@@ -450,27 +450,27 @@ def deleteUser(user_id):
         return render_template('deleteUser.html', user_id=user_id)
 
 
-@app.route('/user/<int:user_id>/books/new/', methods=['GET', 'POST'])
-def newUserBook(user_id):
-    """Adds book to user's collection"""
-    if 'username' not in login_session:
-        return redirect('/login')
-    user = session.query(User).filter_by(id=user_id).one()
-    if login_session['user_id'] != user.id:
-        return "<script>function myFunction() {alert('You are not " \
-               "authorized to add books to this users collection.');}" \
-               "</script><body onload='myFunction()''>"
-    if request.method == 'POST':
-        new_book_info = Books(book_id=request.form['book_id'])
-        new_book = User_Books(user_id=user_id,
-                              book_id=request.form['book_id'], status='Unread')
-        print(new_book.user_id, new_book.book_id, new_book.status)
-        session.add(new_book)
-        session.commit()
-        flash('%s Successfully Added To Your Collection' % new_book_info.name)
-        return redirect(url_for('showUser', user_id=user_id))
-    else:
-        return redirect(url_for('showBooks'))
+# @app.route('/user/<int:user_id>/books/new/', methods=['GET', 'POST'])
+# def newUserBook(user_id):
+#     """Adds book to user's collection"""
+#     if 'username' not in login_session:
+#         return redirect('/login')
+#     user = session.query(User).filter_by(id=user_id).one()
+#     if login_session['user_id'] != user.id:
+#         return "<script>function myFunction() {alert('You are not " \
+#                "authorized to add books to this users collection.');}" \
+#                "</script><body onload='myFunction()''>"
+#     if request.method == 'POST':
+#         new_book_info = Books(book_id=request.form['book_id'])
+#         new_book = User_Books(user_id=user_id,
+#                               book_id=request.form['book_id'], status='Unread')
+#         print(new_book.user_id, new_book.book_id, new_book.status)
+#         session.add(new_book)
+#         session.commit()
+#         flash('%s Successfully Added To Your Collection' % new_book_info.name)
+#         return redirect(url_for('showUser', user_id=user_id))
+#     else:
+#         return redirect(url_for('showBooks'))
 
 
 @app.route('/user/<int:user_id>/book/<int:book_id>/edit',
