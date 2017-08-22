@@ -12,6 +12,7 @@ import httplib2
 import json
 from flask import make_response
 import requests
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -27,6 +28,14 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+def login_required(f):
+    """Decorator function to login protect other pages"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in login_session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 @app.route('/login')
@@ -280,6 +289,7 @@ def gdisconnect():
 
 
 @app.route('/books/JSON')
+@login_required
 def bookInfoAllJSON():
     """Returns all books info as JSON"""
     books = session.query(Books).all()
@@ -287,6 +297,7 @@ def bookInfoAllJSON():
 
 
 @app.route('/books/<int:book_id>/JSON')
+@login_required
 def bookInfoJSON(book_id):
     """Takes a book id and returns its info as JSON"""
     book = session.query(Books).filter_by(id=book_id).one()
@@ -295,6 +306,7 @@ def bookInfoJSON(book_id):
 
 
 @app.route('/users/<int:user_id>/JSON')
+@login_required
 def userJSON(user_id):
     """Takes a user id and returns user's info including all books owned"""
     user = session.query(User).filter_by(id=user_id).one()
@@ -304,21 +316,18 @@ def userJSON(user_id):
 
 
 @app.route('/users/')
+@login_required
 def showUsers():
     """Shows all users in database"""
     users = session.query(User).order_by(asc(User.name))
-    if 'username' not in login_session:
-        return redirect('/login')
-    else:
-        return render_template('users.html', users=users)
+    return render_template('users.html', users=users)
 
 
 @app.route('/books/<int:book_id>/', methods=['GET', 'POST'])
+@login_required
 def showBook(book_id):
     """Renders page for a single book in database.
     If POST, adds that book to users collection."""
-    if 'username' not in login_session:
-        return redirect('/login')
 
     book = session.query(Books).filter_by(id=book_id).one()
     try:
@@ -346,22 +355,19 @@ def showBook(book_id):
 
 
 @app.route('/books/')
+@login_required
 def showBooks():
     """Renders page for all books in database"""
     books = session.query(Books).order_by(asc(Books.title))
-    if 'username' not in login_session:
-        return render_template('publicBooks.html', books=books)
-    else:
-        owned = session.query(User_Books).filter_by(
-            user_id=login_session['user_id'])
-        return render_template('books.html', owned=owned, books=books)
+    owned = session.query(User_Books).filter_by(
+        user_id=login_session['user_id'])
+    return render_template('books.html', owned=owned, books=books)
 
 
 @app.route('/book/new/', methods=['GET', 'POST'])
+@login_required
 def newBook():
     """Creates a new book"""
-    if 'username' not in login_session:
-        return redirect('/login')
     if request.method == 'POST':
         new_book = Books(
             title=request.form['title'],
@@ -378,10 +384,9 @@ def newBook():
 @app.route('/user/')
 @app.route('/user/<int:user_id>/')
 @app.route('/user/<int:user_id>/books/')
+@login_required
 def showUser(user_id):
     """Renders page showing a users entire collection"""
-    if 'username' not in login_session:
-        return redirect('/login')
     if not user_id:
         user_id = login_session['user_id']
     user = session.query(User).filter_by(id=user_id).one()
@@ -404,11 +409,10 @@ def showUser(user_id):
 
 
 @app.route('/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
 def editUser(user_id):
     """Takes a user id and renders page allowing
     user to edit their own details."""
-    if 'username' not in login_session:
-        return redirect('/login')
     edited_user = session.query(User).filter_by(id=user_id).one()
     if login_session['user_id'] != user_id:
         return "<script>function myFunction() {alert('You are not " \
@@ -429,13 +433,12 @@ def editUser(user_id):
 
 
 @app.route('/user/<int:user_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def deleteUser(user_id):
     """Takes a user id and deletes that user from the database"""
     user_to_delete = session.query(User).filter_by(id=user_id).one()
     user_books_to_delete = session.query(User_Books).filter_by(
         user_id=user_id).all()
-    if 'username' not in login_session:
-        return redirect('/login')
     if user_to_delete.id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to delete this user.');}" \
@@ -450,35 +453,11 @@ def deleteUser(user_id):
         return render_template('deleteUser.html', user_id=user_id)
 
 
-# @app.route('/user/<int:user_id>/books/new/', methods=['GET', 'POST'])
-# def newUserBook(user_id):
-#     """Adds book to user's collection"""
-#     if 'username' not in login_session:
-#         return redirect('/login')
-#     user = session.query(User).filter_by(id=user_id).one()
-#     if login_session['user_id'] != user.id:
-#         return "<script>function myFunction() {alert('You are not " \
-#                "authorized to add books to this users collection.');}" \
-#                "</script><body onload='myFunction()''>"
-#     if request.method == 'POST':
-#         new_book_info = Books(book_id=request.form['book_id'])
-#         new_book = User_Books(user_id=user_id,
-#                               book_id=request.form['book_id'], status='Unread')
-#         print(new_book.user_id, new_book.book_id, new_book.status)
-#         session.add(new_book)
-#         session.commit()
-#         flash('%s Successfully Added To Your Collection' % new_book_info.name)
-#         return redirect(url_for('showUser', user_id=user_id))
-#     else:
-#         return redirect(url_for('showBooks'))
-
-
 @app.route('/user/<int:user_id>/book/<int:book_id>/edit',
            methods=['GET', 'POST'])
+@login_required
 def editUserBook(user_id, book_id):
     """Edits the status and notes of a users book in collection"""
-    if 'username' not in login_session:
-        return redirect('/login')
     if login_session['user_id'] != user_id:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to edit this users library.');}" \
@@ -504,13 +483,12 @@ def editUserBook(user_id, book_id):
 
 
 @app.route('/<int:user_id>/<int:book_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def deleteUserBook(user_id, book_id):
     """Removes book from users collection"""
     book_to_delete = session.query(User_Books).filter_by(
         book_id=book_id, user_id=user_id).one()
     book_info = session.query(Books).filter_by(id=book_id).one()
-    if 'username' not in login_session:
-        return redirect('/login')
     if book_to_delete.user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to delete books for this user.');}" \
