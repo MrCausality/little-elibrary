@@ -17,28 +17,28 @@
 					<label for="status">Status:</label>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="status" id="status1" value="Unread" {% if book.status == 'Unread'%}checked{%endif%}>Unread
+					    <input type="radio" name="status" id="status1" value="Unread" {% if user_book.status == 'Unread'%} checked {%endif%} >Unread
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="status" id="status2" value="In Progress" {% if book.status == 'In Progress' %}checked{%endif%}>In Progress
+					    <input type="radio" name="status" id="status2" value="In Progress" {% if user_book.status == 'In Progress' %}checked{%endif%}>In Progress
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="status" id="status3" value="Read" {% if book.status == 'Read'%}checked{%endif%}>Read
+					    <input type="radio" name="status" id="status3" value="Read" {% if user_book.status == 'Read'%}checked{%endif%}>Read
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="status" id="status4" value="Abandoned" {%if book.status == 'Abandoned'%}checked{%endif%}>Abandoned
+					    <input type="radio" name="status" id="status4" value="Abandoned" {%if user_book.status == 'Abandoned'%}checked{%endif%}>Abandoned
 					  </label>
 					</div>
 					<label>
 						Notes:
 					</label>
-					<input type ="text" class="form-control" name="notes" value="{{ book.notes }}">
+					<input type ="text" class="form-control" name="notes" value="{{ user_book.notes }}">
 					<br>
 					<button type="submit" class="btn btn-default" id="submit" name="submit" value="submit">
 					<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Save</button>

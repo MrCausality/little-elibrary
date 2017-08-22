@@ -499,7 +499,8 @@ def editUserBook(user_id, book_id):
         return redirect(url_for('showUser', user_id=user_id))
     else:
         return render_template('editUserBook.html', user_id=user_id,
-                               book_id=book_id, book=book_info)
+                               book_id=book_id, book=book_info,
+                               user_book=edited_book)
 
 
 @app.route('/<int:user_id>/<int:book_id>/delete/', methods=['GET', 'POST'])
