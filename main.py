@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, \
-    redirect, jsonify, url_for, flash
+from flask import (Flask, render_template, request,
+                   redirect, jsonify, url_for, flash)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Books, User_Books, User
@@ -331,7 +331,7 @@ def showBook(book_id):
 
     book = session.query(Books).filter_by(id=book_id).one()
     try:
-        book_owned = session.query(User_Books).filter_by(
+        session.query(User_Books).filter_by(
             user_id=login_session['user_id'], book_id=book_id).one()
         owned = True
     except:
@@ -413,11 +413,11 @@ def showUser(user_id):
 def editUser(user_id):
     """Takes a user id and renders page allowing
     user to edit their own details."""
-    edited_user = session.query(User).filter_by(id=user_id).one()
     if login_session['user_id'] != user_id:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to edit this user');}" \
                "</script><body onload='myFunction()''>"
+    edited_user = session.query(User).filter_by(id=user_id).one()
     if request.method == 'POST':
         if request.form['submit'] == "cancel":
             return redirect(url_for('showUser', user_id=user_id))
@@ -436,13 +436,14 @@ def editUser(user_id):
 @login_required
 def deleteUser(user_id):
     """Takes a user id and deletes that user from the database"""
-    user_to_delete = session.query(User).filter_by(id=user_id).one()
-    user_books_to_delete = session.query(User_Books).filter_by(
-        user_id=user_id).all()
-    if user_to_delete.id != login_session['user_id']:
+    if user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to delete this user.');}" \
                "</script><body onload='myFunction()''>"
+    user_to_delete = session.query(User).filter_by(id=user_id).one()
+    user_books_to_delete = session.query(User_Books).filter_by(
+        user_id=user_id).all()
+
     if request.method == 'POST':
         if request.form['submit'] == "cancel":
             return redirect(url_for('showUser', user_id=user_id))
@@ -490,13 +491,14 @@ def editUserBook(user_id, book_id):
 @login_required
 def deleteUserBook(user_id, book_id):
     """Removes book from users collection"""
-    book_to_delete = session.query(User_Books).filter_by(
-        book_id=book_id, user_id=user_id).one()
-    book_info = session.query(Books).filter_by(id=book_id).one()
-    if book_to_delete.user_id != login_session['user_id']:
+    if user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not " \
                "authorized to delete books for this user.');}" \
                "</script><body onload='myFunction()''>"
+    book_to_delete = session.query(User_Books).filter_by(
+        book_id=book_id, user_id=user_id).one()
+    book_info = session.query(Books).filter_by(id=book_id).one()
+
     if request.method == 'POST':
         if request.form['submit'] == "cancel":
             return redirect(url_for('showUser', user_id=user_id))
