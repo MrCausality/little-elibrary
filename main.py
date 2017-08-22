@@ -444,6 +444,8 @@ def deleteUser(user_id):
                "authorized to delete this user.');}" \
                "</script><body onload='myFunction()''>"
     if request.method == 'POST':
+        if request.form['submit'] == "cancel":
+            return redirect(url_for('showUser', user_id=user_id))
         session.delete(user_to_delete)
         session.delete(user_books_to_delete)
         flash('%s Successfully Removed User ' % user_to_delete.name)
@@ -494,6 +496,8 @@ def deleteUserBook(user_id, book_id):
                "authorized to delete books for this user.');}" \
                "</script><body onload='myFunction()''>"
     if request.method == 'POST':
+        if request.form['submit'] == "cancel":
+            return redirect(url_for('showUser', user_id=user_id))
         session.delete(book_to_delete)
         flash('%s Successfully Removed From Collection' % book_info.title)
         session.commit()
