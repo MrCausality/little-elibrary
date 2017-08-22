@@ -446,13 +446,15 @@ def deleteUser(user_id):
     if request.method == 'POST':
         if request.form['submit'] == "cancel":
             return redirect(url_for('showUser', user_id=user_id))
+        for b in user_books_to_delete:
+            session.delete(b)
         session.delete(user_to_delete)
-        session.delete(user_books_to_delete)
         flash('%s Successfully Removed User ' % user_to_delete.name)
         session.commit()
         return redirect(url_for('disconnect'))
     else:
-        return render_template('deleteUser.html', user_id=user_id)
+        return render_template('deleteUser.html', user_id=user_id,
+                               user=user_to_delete)
 
 
 @app.route('/user/<int:user_id>/book/<int:book_id>/edit',
